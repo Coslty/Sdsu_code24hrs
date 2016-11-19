@@ -13,7 +13,7 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -36,6 +36,9 @@ dependencies {
     compile 'com.google.firebase:firebase-database:9.8.0'
 
     compile 'com.google.android.gms:play-services:9.8.0'
+
+
+    compile 'com.android.support:multidex:+'
 
 
 
