@@ -25,7 +25,7 @@ public class MapSDSUActivity extends Activity {
         btn_start_google_map.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MapSDSUActivity.this, GoogleMapInfoActivity.class));
+                startActivity(new Intent(MapSDSUActivity.this, MyLocationDemoActivity.class));
             }
         });
 
