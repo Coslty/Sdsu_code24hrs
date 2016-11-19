@@ -5,6 +5,7 @@ package com.example.keng.sdsu_code24hrs;
         import android.app.Activity;
         import android.content.Intent;
         import android.os.Bundle;
+        import android.provider.ContactsContract;
         import android.support.annotation.NonNull;
         import android.support.v7.app.AppCompatActivity;
         import android.text.TextUtils;
@@ -14,10 +15,19 @@ package com.example.keng.sdsu_code24hrs;
         import android.widget.ProgressBar;
         import android.widget.Toast;
 
+        import com.example.keng.sdsu_code24hrs.models.User;
         import com.google.android.gms.tasks.OnCompleteListener;
         import com.google.android.gms.tasks.Task;
         import com.google.firebase.auth.AuthResult;
         import com.google.firebase.auth.FirebaseAuth;
+        import com.google.firebase.auth.FirebaseUser;
+        import com.google.firebase.database.DatabaseReference;
+        import com.google.firebase.database.FirebaseDatabase;
+
+        import com.google.firebase.auth.FirebaseAuth;
+
+
+
 
 public class SignupActivity extends Activity {
 
@@ -25,6 +35,12 @@ public class SignupActivity extends Activity {
     private Button btnSignIn, btnSignUp, btnResetPassword;
     private ProgressBar progressBar;
     private FirebaseAuth auth;
+
+
+    private DatabaseReference mDatabase;
+    private FirebaseAuth mAuth;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,6 +56,9 @@ public class SignupActivity extends Activity {
         inputPassword = (EditText) findViewById(R.id.password);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         btnResetPassword = (Button) findViewById(R.id.btn_reset_password);
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
 
         btnResetPassword.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,7 +111,12 @@ public class SignupActivity extends Activity {
                                     Toast.makeText(SignupActivity.this, "Authentication failed." + task.getException(),
                                             Toast.LENGTH_SHORT).show();
                                 } else {
-                                    startActivity(new Intent(SignupActivity.this, MainActivity.class));
+
+                                        onAuthSuccess(task.getResult().getUser());
+
+
+
+                                    startActivity(new Intent(SignupActivity.this, MapSDSUActivity.class));
                                     finish();
                                 }
                             }
@@ -107,4 +131,35 @@ public class SignupActivity extends Activity {
         super.onResume();
         progressBar.setVisibility(View.GONE);
     }
+
+
+    private void onAuthSuccess(FirebaseUser user) {
+        String username = usernameFromEmail(user.getEmail());
+        writeNewUser(user.getUid(), username, user.getEmail());
+        startActivity(new Intent(SignupActivity.this, MapSDSUActivity.class));
+        finish();
+    }
+
+    private String usernameFromEmail(String email){
+        if (email.contains("@")) {
+            return email.split("@")[0];
+        }else {
+            return email;
+        }
+    }
+    private void writeNewUser(String userId, String name, String email) {
+        String usernameId = name.toUpperCase();
+        User user = new User(name, usernameId, email);
+        mDatabase.child("users").child(userId).setValue(user);
+    }
+
+
+
+
+
+
+
+
+
+
 }

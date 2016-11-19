@@ -7,30 +7,45 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.provider.Settings;
+
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
-import android.location.Location;
+
 
 
 public class MyLocationDemoActivity extends AppCompatActivity
         implements
         OnMyLocationButtonClickListener,
+        GoogleMap.OnInfoWindowClickListener,
         OnMapReadyCallback,
         ActivityCompat.OnRequestPermissionsResultCallback {
-Location location;
-    /**
-     * Request code for location permission request.
-     *
-     * @see #onRequestPermissionsResult(int, String[], int[])
-     */
+
+
+    private DatabaseReference mDatabase, root;
+
+
+    String token = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+    private static final LatLng Soccer = new LatLng(32.774, -117.08);
+    private Marker mSoccer;
+
+
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
 
@@ -43,6 +58,12 @@ Location location;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_google_map_info);
 
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+
+
+
+
+
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -54,15 +75,21 @@ Location location;
         mMap.setOnMyLocationButtonClickListener(this);
 
 
+        mSoccer = mMap.addMarker(new MarkerOptions()
+                .position(Soccer)
+                .snippet("Soccer")
 
+                .title("Tony"));
+        mSoccer.setTag(0);
+
+        mMap.setOnInfoWindowClickListener(this);
 
        enableMyLocation();}
 
 
+
     private void enableMyLocation() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-
-
 
                 != PackageManager.PERMISSION_GRANTED) {
             // Permission to access the location is missing.
@@ -71,11 +98,6 @@ Location location;
         } else if (mMap != null) {
             // Access to the location has been granted to the app.
             mMap.setMyLocationEnabled(true);
-
-
-
-
-
 
         }
     }
@@ -86,8 +108,18 @@ Location location;
         // Return false so that we don't consume the event and the default behavior still occurs
         // (the camera animates to the user's current position).
 
+
+         Double longi, lati;
+        longi = mMap.getMyLocation().getLongitude();
+        lati = mMap.getMyLocation().getLatitude();
+
+
+
         System.out.println("Heyyyy " +  mMap.getMyLocation().getLongitude());
         System.out.println("Heyyyy " +  mMap.getMyLocation().getLatitude());
+
+        mDatabase.child("users").child(token).child("Location").child("Longitude").setValue(longi);
+        mDatabase.child("users").child(token).child("Location").child("Latitude").setValue(lati);
 
 
 
@@ -130,5 +162,67 @@ Location location;
         PermissionUtils.PermissionDeniedDialog
                 .newInstance(true).show(getSupportFragmentManager(), "dialog");
     }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        String name;
+        String myname;
+
+
+        Toast.makeText(this, "Request been send!",
+                Toast.LENGTH_SHORT).show();
+
+       myname= mDatabase.child("users").child(token).child("username").getKey();
+
+
+        name = mSoccer.getTitle();
+        System.out.println(name);
+        mDatabase.child("users").child("Tony").child("Request").child("name").setValue(myname);
+
+        requst();
+
+    }
+
+
+
+
+    private void requst() {
+        mDatabase.child("users").child(token).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (dataSnapshot.child("username").exists()){
+                    final String myName = dataSnapshot.child("username").getValue().toString();
+                    final String myPhone = dataSnapshot.child("Phone number").getValue().toString();
+
+                    System.out.println("WHAT IS THISSSS!!! BROOO " + myName);
+                    mDatabase.child("users").child(mSoccer.getTitle()).child("Request").child("name").setValue(myName);
+                    mDatabase.child("users").child(mSoccer.getTitle()).child("Request").child("name").child(myName).setValue(myPhone);
+
+               }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }

@@ -14,4 +14,26 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
+    <string-array name="Sports" >
+        <item>Baseball</item>
+        <item>Basketball</item>
+        <item>Football</item>
+        <item>Golf</item>
+        <item>Soccer</item>
+        <item>Tennis</item>
+        <item>Track and field</item>
+        <item>Volleyball</item>
+    </string-array>
+
+
+
+
+
+
+
+
+
+
+
+
 </resources>
